@@ -8,15 +8,18 @@ import matplotlib.pyplot as plt
 
 #Creates Object "bacteria" for Storing all Bacteria Related Information
 class bacteria:
-    dictionary = {}
+    dic = {}
 
-    def __init__(self,spawn_rate,reproduction_rate,grid_ref,colour):
+    def __init__(self,name,spawn_rate,reproduction_rate,grid_ref,colour):
         self.count = 0
+        self.name = name
         self.spawn_rate = spawn_rate
         self.reproduction_rate = reproduction_rate
         self.grid_ref = grid_ref
         self.colour = colour
-        bacteria.dictionary[grid_ref] = self
+        bacteria.dic[grid_ref] = self
+        bacteria.dic[name] = self
+        bacteria.dic[(name, grid_ref)] = self
 
     def ammend_count(self):
         self.count += 1
@@ -32,19 +35,34 @@ class bacteria:
 
     @classmethod
     def create_defaults(cls):
-        cls(0,0,0,'white')
+        cls('empty',0,0,0,'white')
+        cls('nf',1,0,1,'red')
+        cls('np',0,0,2,'blue')
+        cls('nc',0,0,3,'black')
+        cls('ncp',0,0,4,'green')
 
 class grid:
-    def __init__(self,size):
+    def __init__(self,x,y,square_size):
+        self.window = Tk()
+        self.window.attributes('-fullscreen', False)
+        self.window.title("Bacteria")
+        self.canvas = Canvas(self.window, width=x*square_size, height=y*square_size, bg='white')
+        self.canvas.pack(anchor=CENTER, expand=True)
+
         self.heatmap = []
-        for r in range(size[1]):
+        for r in range(y):
             thisrow = []
-            for c in range(size[0]):
+            for c in range(x):
                 if random() < 0.5:
                     thisrow.append(1)
                 else:
                     thisrow.append(0)
             self.heatmap.append(thisrow)
+
+    def handler():
+        global run
+        run = False
+        self.window.destroy()
 
 def death_radius(r):   
     if r > 0:
