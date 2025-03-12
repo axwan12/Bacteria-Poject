@@ -1,26 +1,22 @@
 from Functions import *
-death_radius = death_radius(0)
-
 '''
 Bacteria Setup
 '''
 bacteria.create_defaults()
+bacteria.accumalate_all_spawn()
 
 '''
 Grid Setup
 '''
-grid = grid(140,100,10)
-
-grid.window.protocol("WM_DELETE_WINDOW", grid.handler)
+grid = grid(140,100,10,bacteria,'bacteria')
 
 '''
 Main Loop
 '''
-nf_amount = []
+grid.run = True
 
-run = True
-
-while run:
+while grid.run:
+    heatmap = grid.heatmap
     '''
     Canvas
     '''
@@ -28,29 +24,23 @@ while run:
 
     for r in range(len(heatmap)):
         for c in range(len(heatmap[0])):
-            grid.canvas.create_rectangle((10*c,10*r), (10*(c+1), 10*(r+1)),
-                                    fill=bacteria.dic[heatmap[r][c]].colour)
+            colour(heatmap,grid.canvas,r,c)
 
-            bacteria.dictionary[heatmap[r][c]].ammend_count()
-            
-    N = nf.count + np.count + nc.count + ncp.count
+            bacteria.dic[heatmap[r][c]].ammend_count()
     '''
     Moverment
     '''
-    order = heatmap_order_shuffle(heatmap)
-    heatmap = move_random(heatmap,0.25,order)
+    heatmap = move_random(heatmap,0.25,2)
     
     grid.window.update()
-    #sleep(0.5)
-
-    print([nf.count,np.count,nc.count,ncp.count])
-    nf_amount.append(nf.count)
-
+    sleep(0.5)
+    
+    bacteria.dic['nf'].bacteria_history()
     bacteria.reset_all_counts()
-
+    
 grid.window.mainloop()
 
-plt.plot(nf_amount)
+plt.plot(bacteria.dic['nf'].history)
 plt.show()
 
 '''
