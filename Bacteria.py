@@ -3,12 +3,11 @@ from Functions import *
 Bacteria Setup
 '''
 bacteria.create_defaults()
-bacteria.accumalate_all_spawn()
 
 '''
 Grid Setup
 '''
-grid = grid(140,100,10,bacteria,'bacteria')
+grid = grid(200,200,10,bacteria,'bacteria')
 
 '''
 Main Loop
@@ -30,18 +29,26 @@ while grid.run:
     '''
     Moverment
     '''
-    heatmap = move_random(heatmap,0.25,2)
+    heatmap = Behaviour(heatmap,0.25,2,1)
     
     grid.window.update()
     sleep(0.5)
     
     bacteria.dic['nf'].bacteria_history()
+    bacteria.dic['np'].bacteria_history()
+    bacteria.dic['nc'].bacteria_history()
+    bacteria.dic['ncp'].bacteria_history()
     bacteria.reset_all_counts()
     
 grid.window.mainloop()
 
 plt.plot(bacteria.dic['nf'].history)
+plt.plot(bacteria.dic['np'].history)
+plt.plot(bacteria.dic['nc'].history)
+plt.plot(bacteria.dic['ncp'].history)
 plt.show()
+
+print(bacteria.dic[heatmap[10][15]].plasmid)
 
 '''
 References/ Resources
