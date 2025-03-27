@@ -13,9 +13,9 @@ weights = []
 #Creates Object "bacteria" for Storing all Bacteria Related Information
 class bacteria:
     dic = {}
-    death_rate = 0.1
-    all_spawn_rate = 0.1
-    plasmid_rate = 0.02
+    death_rate = 1
+    all_spawn_rate = 0.5
+    plasmid_rate = 0.1
     plasmid_death_rate = 0.01
     def __init__(self,name,spawn_rate,reproduction_rate,grid_ref,colour,plasmid):
         self.count = 0
@@ -59,15 +59,15 @@ class bacteria:
 
     @classmethod
     def create_defaults(cls):
-        f = 0.2
-        r, mf, mp, mc, mcp, cC, cP, x, s, A = 1, 0.75, 0.3, 0.3, 0.5, 0.01, 0.01, 0.01, 0.01, 0
+        f = 1
+        r, mf, mp, mc, mcp, cC, cP, x, s, A = 1, 0.75, 0.3, 0.3, 0.5, 0.01, 0.01, 0.01, 0.01, 0.3
         rf, rc, rp, rcp = f*(r - mf*A), f*(r - cC - mc*A), f*(r - cP - x - mp*A), f*(r - cC - cP - x - mcp*A)
 
         cls('empty',0,0,0,'white',0)
-        cls('nf',0.67,rf,1,'red',False)
+        cls('nf',0,rf,1,'red',False)
         cls('np',0.1,rp,2,'blue',True)
-        cls('nc',0.23,rc,3,'black',False)
-        cls('ncp',0.1,rcp,4,'green',True)
+        cls('nc',0.67,rc,3,'black',False)
+        cls('ncp',0.23,rcp,4,'green',True)
 
 class grid:
     def __init__(self,x,y,square_size, bacteria,name):
@@ -130,19 +130,32 @@ def Behaviour(heatmap,extrinsic_death_rate,death_radius,interaction_area):
         spawn_direction = 2*pi*random()
         sh = round(cos(direction)) 
         sv = round(sin(direction))
+        Free = []
+        Free_Count = []
 
         n_count = 0
+
+        #if random() < bacteria.dic[heatmap[p[0]][p[1]]].reproduction_rate and heatmap[(p[0]+sh)%len(heatmap)][(p[1]+sv)%len(heatmap[0])] == 0:
+        #    heatmap[(p[0]+sh)%len(heatmap)][(p[1]+sv)%len(heatmap[0])] = bacteria.dic[heatmap[p[0]][p[1]]].grid_ref
+            
         if bacteria.dic[heatmap[p[0]][p[1]]].plasmid == True:
             for i in range(len(m)):
                 position = heatmap[(p[0]+m[i][0])%len(heatmap)][(p[1]+m[i][1])%len(heatmap[0])]
-                if position != 0 and bacteria.dic[position].plasmid == False and random() < bacteria.plasmid_rate:
+                if position != 0 and bacteria.dic[position].plasmid == False and random() < bacteria.plasmid_rate/4:
                     heatmap[(p[0]+m[i][0])%len(heatmap)][(p[1]+m[i][1])%len(heatmap[0])] += 1
             if random() < bacteria.plasmid_death_rate:
                 heatmap[p[0]][p[1]] -= 1
-        
-        if random() < bacteria.dic[heatmap[p[0]][p[1]]].reproduction_rate and heatmap[(p[0]+sh)%len(heatmap)][(p[1]+sv)%len(heatmap[0])] == 0:
-            heatmap[(p[0]+sh)%len(heatmap)][(p[1]+sv)%len(heatmap[0])] = bacteria.dic[heatmap[p[0]][p[1]]].grid_ref
-            
+
+        for i in range(len(m)):
+                position = heatmap[(p[0]+m[i][0])%len(heatmap)][(p[1]+m[i][1])%len(heatmap[0])]
+                if position == 0:
+                    Free.append(((p[0]+m[i][0])%len(heatmap),(p[1]+m[i][1])%len(heatmap[0]))) 
+                    Free_Count.append(1)  
+
+        if random() < bacteria.dic[heatmap[p[0]][p[1]]].reproduction_rate and len(Free) > 0:
+            spawn_direction = weighted_output(Free,Free_Count)
+            heatmap[(p[0]+spawn_direction[0])%len(heatmap)][(p[1]+spawn_direction[1])%len(heatmap[0])] = heatmap[p[0]][p[1]]
+    
         for i in range(len(n)):
             if heatmap[(p[0]+n[i][0])%len(heatmap)][(p[1]+n[i][1])%len(heatmap[0])] > 0:
                 n_count +=1
@@ -160,8 +173,8 @@ def Behaviour(heatmap,extrinsic_death_rate,death_radius,interaction_area):
                 
     return heatmap
 
-def colour(heatmap, canvas, r, c):
-    canvas.create_rectangle((10*c,10*r), (10*(c+1), 10*(r+1)),
+def colour(heatmap, canvas, r, c,square_size):
+    canvas.create_rectangle((square_size*c,square_size*r), (square_size*(c+1), square_size*(r+1)),
                             fill=bacteria.dic[heatmap[r][c]].colour)
 def weighted_output(numbers,weights):
     random_number = choices(numbers, weights=weights, k=1)[0]
